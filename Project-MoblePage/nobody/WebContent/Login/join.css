@@ -1,0 +1,77 @@
+@charset "UTF-8";
+*      { margin:0; padding: 0; }
+body   {
+   background-color: rgb(255, 255, 255);
+    font-family: "맑은 고딕";
+}
+
+#join-div      { 
+   width:400px; 
+   height:30px;
+   padding:10px; 
+   border:1px solid rgb(255, 255, 255); 
+   border-color: rgb(206, 206, 206);
+   margin:5px auto; 
+   background-color: rgb(255, 255, 255);
+   color: rgb(204, 204, 204);
+    border-radius: 5px;
+   }
+
+#regWrap{ 
+   background-color: rgb(245,245,245); 
+    width: 500px; 
+    height: 750px; 
+    margin-left: auto; 
+    margin-right: auto; 
+    border-radius: 10px;
+   }
+label.legend{ 
+   display:block; 
+   margin-left: 40px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+   text-align: left; 
+    color: rgb(37, 71, 112);  
+   }
+input[type="submit"].reg{
+   border: none;
+   display:block; 
+   height: 50px; 
+   width:420px; 
+   margin: auto; 
+   font-size: 1em;
+   color: rgb(255, 255, 255);
+   background-color:rgb(049, 096, 152); 
+    border-radius: 5px;   
+   }
+input[type="text"]{
+   border: none;
+   line-height: 30px;
+   width: 300px;
+}
+input[type="password"]{
+   border: none;
+   line-height: 30px;
+   width: 300px;
+}
+.mainLavel{
+   margin: 50px;
+   font-size: 2em;
+   text-align: center;
+   color: rgb(255, 255, 255);
+}
+#sel{
+   width: 400px;
+   padding:6.5px;
+   border:1px solid rgb(255, 255, 255);
+   border-color: rgb(255, 255, 255);
+   background-color: rgb(255, 255, 255);
+   color: rgb(0, 0, 0);
+}
+#regLogodiv{
+    text-align : center;
+}
+#regLogo{
+    width : 316px; 
+    height : 132px;
+}

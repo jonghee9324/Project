@@ -1,0 +1,90 @@
+@charset "UTF-8";
+
+body{font-family: '맑은 고딕'}
+table.view { 
+
+		margin:10px auto; 
+         border:1px solid #333;
+         
+        border-collapse:collapse;
+        border-left: 1px solid #ccc;
+        border-right: 1px solid #ccc;
+        table-layout:fixed; 
+        word-break:break-all;
+}
+	
+
+
+
+.emdfhr{  
+	height:35;
+	background-color:#999999;
+    font-size:1.1em; 
+    color:#fff; 
+    border-top-width:2px; 
+    border-bottom-width:2px ;
+    text-align: center;
+     border:1.5px solid #333;
+	 padding:8px; 
+}
+
+.titleth{
+	background-color: #E8ECF6; 
+	text-align: center;
+	height : 25px;
+}
+
+.title { 
+  width:493px;
+  height:38px;
+  text-align:center;
+  border: 1px solid #cfcfcf; 
+  vertical-align:middle; 
+  line-height:29px;
+ 
+ }
+ 
+.contentth{
+	height:25px;
+	background-color: #E8ECF6; 
+	text-align: center;
+}
+
+.content { 
+	font-size:12px;  
+	border: 1px solid #CDC9C9; 
+	bordescrollbar-arrow-color:#d2d2d2;
+	scrollbar-3dlight-color:#fff;
+	scrollbar-highlight-color:#ccc;
+	scrollbar-face-color:#FFF;
+	scrollbar-shadow-color:#ccc;
+	scrollbar-darkshadow-color:#fff;
+	scrollbar-track-color:#fff ;
+	width:493px;
+	height:327px;
+}
+
+.btndiv{
+	width:600;
+	margin:10px auto; 
+}
+.btn{
+ float:right;
+ 
+    background-color: #E8ECF6;
+    border-style: none;
+   
+    text-align: center;
+     width: 100px;
+    height: 30px;
+    margin-right: 8;
+    font-size: 15px;
+}
+.btn:hover{
+	background-color:#999;
+	color: #fff;
+	cursor:pointer
+}
+. upload_file{
+	width: 500px;
+}

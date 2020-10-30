@@ -1,0 +1,73 @@
+@charset "UTF-8";
+
+
+body{font-family: '맑은 고딕'}
+.view { 
+		 width:600px;
+		 height:500px;
+		border:"1";
+		margin:10px auto; 
+        border:1px solid #333; 
+        border-collapse:collapse;
+        border-left: 1px solid #ccc;
+        border-right-width:0;
+        table-layout:fixed;
+        word-break:break-all;
+        
+
+	}
+table th, table td {
+ border:1px solid #333;
+ padding:8px; 
+
+ }
+table th{
+ 		background-color:#999; 
+        font-size:1.1em; 
+        color:#fff; 
+        border-top-width:2px; 
+        border-bottom-width:2px ;
+        text-align: center;
+}
+
+
+table td{
+		border-style:dotted;
+		
+}
+
+.title{
+		 height:25px;
+		background-color: #E8ECF6; 
+		text-align: center;
+		white-space : nowrap;
+		/*글 넘치면 ...으로
+		text-overflow: ellipsis;
+		overflow:hidden;*/
+		background-color: #E8ECF6; 
+		text-align: center;
+}
+.btndiv{
+	 width:600px;
+	height:50px;
+	margin:10px auto; 	
+}
+.btn{
+	float: right;
+	botom: 0;
+	position: absolute;
+    background-color: #E8ECF6;
+    border-style: none;
+    width: 100px;
+    height: 30px;
+    text-align: center;
+    margin-right: 20%;
+    margin-top: 0.5em;
+    font-size: 15px;
+    
+}
+.btn:hover{
+	background-color:#999;
+	color: #fff;
+	cursor:pointer
+}

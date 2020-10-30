@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="utf-8" />
+        <title>햄버거 무인 판매기</title>
+        <script>                        
+            // 1.살사리코, 2.화이트갈릭, 3.마살라, 4.딥치즈, 5.불싸이, 6.인크레더블, 7.언블리버블, 8.싸이, 9. 치즈베이컨
+            var hamberger = new Array({name: "살사리코", hamimg: "살사리코.png", cost: 4500,
+            check: 0, pick: 0, time: 10},
+            {name: "화이트갈릭", hamimg: "화이트갈릭.png", cost: 4100, check: 0, pick: 0, time: 10},
+            {name: "마살라", hamimg: "마살라.png", cost: 3800, check: 0, pick: 0, time: 10},
+            {name: "딥치즈", hamimg: "딥치즈.png", cost: 4000, check: 0, pick: 0, time: 10},
+            {name: "불싸이", hamimg: "불싸이.png", cost: 3600, check: 0, pick: 0, time: 10},
+            {name: "인크레더블", hamimg: "인크레더블.png", cost: 4900, check: 0, pick: 0,time: 10},
+            {name: "언블리버블", hamimg: "언블리버블.png", cost: 5100, check: 0, pick: 0,time: 10},
+            {name: "싸이", hamimg: "싸이.png", cost: 3400, check: 0, pick: 0 ,time: 10},
+            {name: "치즈베이컨", hamimg: "치즈베이컨.png", cost: 4500, check: 0, pick: 0, time: 10});
+            
+            // 1.라코타샐러드, 2.어니언치즈감자, 3.할라피뇨너겟, 4.치즈스틱, 5.케이준양념감자
+            var side = new Array({name: "라코타샐러드", sideimg: "라코타샐러드.png", cost: 3000,
+            check: 0, pick: 0, time: 10},
+            {name: "어니언치즈감자", sideimg: "어니언치즈감자.png", cost: 2500, check: 0, pick: 0, time: 10},
+            {name: "할라피뇨너겟", sideimg: "할라피뇨너겟.png", cost: 1500, check: 0, pick: 0, time: 10},
+            {name: "치즈스틱", sideimg: "치즈스틱.png", cost: 1900, check: 0, pick: 0, time: 10},
+            {name: "케이준양념감자", sideimg: "케이준양념감자.png", cost: 1700, check: 0, pick: 0, time: 10});           
+            // 1.콜라, 2.딸기스무디, 3.레몬티, 4.오렌지주스, 5.아메리카노
+            var juice= new Array({name: "콜라", juiceimg: "콜라.png", cost: 1600, check: 0, pick: 0, time: 10},
+            {name: "딸기스무디", juiceimg: "딸기스무디.png", cost: 1700, check: 0, pick: 0, time: 10},
+            {name: "레몬티", juiceimg: "레몬티.png", cost: 2000, check: 0, pick: 0, time: 10},
+            {name: "오렌지주스", juiceimg: "오렌지주스.png", cost: 2000, check: 0, pick: 0, time: 10},
+            {name: "아메리카노", juiceimg: "아메리카노.png", cost: 1500, check: 0, pick: 0, time: 10});            
+            var waiting = new Array();
+            var waitingcount=0;           
+            var odlist = new Array();
+            var odlistcount=0;
+            var total =0;
+            function setting(){                
+                for(var i=0; i<localStorage.length;i++){
+                    var key = localStorage.key(i);
+                    for(var j=0;j<hamberger.length;j++){
+                        if(key == hamberger[j].name){
+                            hamberger[j].pick = parseInt(localStorage[key]);
+                        } 
+                    }
+                    for(var j=0;j<side.length;j++){
+                        if(key == side[j].name){
+                            side[j].pick = parseInt(localStorage[key]);
+                        } 
+                    }
+                    for(var j=0;j<juice.length;j++){
+                        if(key == juice[j].name){
+                            juice[j].pick = parseInt(localStorage[key]);
+                        } 
+                    }                                         
+                }
+                bestmenulist();
+                setInterval(bestmenulist, 30000)
+            }            
+            // 주문하기 버튼 이벤트
+            function order(){
+                var csname = prompt("주문자 이름을 입력해주세요.");
+                if( csname != null){      
+                    for(var i=0; i<hamberger.length;i++){
+                        hamberger[i].pick += hamberger[i].check;
+                        hamberger[i].check=0;
+                        localStorage.setItem(hamberger[i].name, hamberger[i].pick);
+                    }
+                    for(var i=0; i<side.length;i++){
+                        side[i].pick += side[i].check;
+                        side[i].check=0;
+                        localStorage.setItem(side[i].name, side[i].pick);
+                    }
+                    for(var i=0; i<juice.length;i++){
+                        juice[i].pick += juice[i].check;
+                        juice[i].check=0;
+                        localStorage.setItem(juice[i].name, juice[i].pick);
+                    }
+                    var ttime =0;
+                    for(var i=0; i<odlist.length;i++){                
+                        ttime += (odlist[i].mntime*odlist[i].mnea);
+                    }                                     
+                    var wtinfo = {
+                        customername: csname,
+                        cooktime: ttime,
+                        cooktimer: null,
+                        customerorder: odlist
+                    };                    
+                    waiting[waitingcount] = wtinfo;
+                    createwaiting(csname);                                       
+                    waitingcount++;                     
+                    var cancellistid = document.getElementById("menulist")                
+                    
+                    // 주문내역 테이블 삭제
+                    while(cancellistid.rows.length >= 2 ) {
+                        cancellistid.deleteRow(cancellistid.rows.length-1);
+                    }
+                    // 주문내역 저장 배열 비우기
+                    for(var i=0;i<odlistcount;i++){
+                        odlist.pop();                    
+                    }
+                    odlistcount=0;
+                    total=0;
+                    document.getElementById("cost").innerHTML = total;
+                    //localStorage.clear();                    
+                }
+            }
+            function f1(csindex){
+                var csname = waiting[csindex].customername
+                waiting[csindex].cooktimer = setInterval(function(){exam(csname,csindex)}, 1000);
+            }
+            function exam(csname,csindex){  
+                var g = document.getElementById(csname);
+                var gg = g.childNodes[0].childNodes[2]; // 주문대기내역에서의 주문수령버튼                   
+                if(waiting[csindex].cooktime == 0){                    
+                    alert(csname+"님 상품 준비가 끝났습니다.");
+                    gg.disabled = false;
+                    clearInterval(waiting[csindex].cooktimer);
+                    gg.innerHTML = "상품수령";
+                }
+                else{
+                    waiting[csindex].cooktime--;           
+                    gg.innerHTML = waiting[csindex].cooktime;
+                    
+                }
+            }
+            // 주문대기내역 추가 메소드
+            function createwaiting(csname){ 
+                var cancellistid = document.getElementById("menulist");
+                var pali = document.getElementById("waitlist");
+                var newbtn = document.createElement("button");
+                var newobj = document.createElement("li");
+                var newdt = document.createElement("details");
+                var newtb = document.createElement("table");
+                var newtr = document.createElement("tr");
+                newbtn.disabled = 'disabled'; // 나중에 비활성화로 바꾸기
+                newobj.setAttribute("id", csname);                
+                //newtr.setAttribute("style", "border-bottom: ");
+                newtb.setAttribute("class", "menutable");                    
+                for(var i=0;i<odlist.length;i++){
+                    newtb.innerHTML += "<tr>"; 
+                    newtb.innerHTML += "<td>" +odlist[i].mnname + "</td>"+ "<td>" 
+                    + odlist[i].mnea + "</td>"+ "<td>" +odlist[i].mncost + "</td>";      
+                    newtb.innerHTML += "</tr>";
+                }                
+                newobj.onload = f1(waitingcount);               
+                      
+                // 주문수령버튼 이벤트
+                newbtn.onclick = function(){
+                    var example = this.parentElement;
+                    var exm = example.parentElement;                    
+                    var lindex=0;
+                    for(var i=0; i<waiting.length;i++){
+                        if(exm.id == waiting[i].customername) {
+                            lindex = i ;                                             
+                        }                            
+                    }                    
+                    waiting.splice(lindex, 1);
+                    waitingcount--;                    
+                    exm.parentElement.removeChild(exm);                   
+                };                
+                newdt.innerHTML ="<summary>"+csname+"</summary>";                
+                newdt.appendChild(newtb);
+                newdt.appendChild(newbtn);
+                newobj.appendChild(newdt);
+                pali.appendChild(newobj);                
+            }
+            // 추천메뉴를 위해 각 항목별 인기메뉴 확인 메소드
+            function bestmenulist(){                
+                var hammax=0;
+                var sidemax=0;
+                var juicemax=0;
+                var hambest=0;
+                var sidebest=0;
+                var juicebest=0;                
+                for(var i=0;i<hamberger.length;i++){
+                    if(hamberger[i].pick > hammax) {
+                        hammax = hamberger[i].pick;
+                        hambest =i;
+                    }
+                }
+                max=0;
+                for(var i=0;i<side.length;i++){
+                    if(side[i].pick > sidemax) {
+                        sidemax = side[i].pcik;
+                        sidebest =i;
+                    }
+                }                
+                max=0;
+                for(var i=0;i<juice.length;i++){
+                    if(juice[i].pick > juicemax) {
+                        juicemax = juice[i].pcik;
+                        juicebest =i;
+                    }
+                }        
+                document.getElementById("himg").src = hamberger[hambest].hamimg;
+                document.getElementById("hinfo").innerHTML = hamberger[hambest].name;
+                document.getElementById("simg").src = side[sidebest].sideimg;
+                document.getElementById("sinfo").innerHTML = side[sidebest].name;
+                document.getElementById("jimg").src = juice[juicebest].juiceimg; 
+                document.getElementById("jinfo").innerHTML = juice[juicebest].name;  
+            }
+            // 주문내역 생성 메소드
+            function createDIV(menu, ea, cost, mtc) {
+                var mninfo = {
+                    mnea: ea,
+                    mnname: menu.value,
+                    mncost: cost,
+                    mntime: mtc
+                };                
+                odlist[odlistcount] = mninfo;
+                odlistcount++;
+                var obj = document.getElementById("menulist");                           
+                var newobj = document.createElement("tr");                
+                newobj.innerHTML = "<td>"+ menu.value + "</td>"+ "<td>"+ea+"</td>"+ "<td>"+ cost + "</td>";
+                // 주문내역 삭제 메소드                
+                newobj.ondblclick = function() {                                       
+                    cancelca(this.rowIndex-1);                    
+                    total -= odlist[this.rowIndex-1].mncost;
+                    odlist.splice((this.rowIndex)-1,1);
+                    odlistcount--; 
+                    var p = this.parentElement; // 부모 HTML 태그 요소
+                    p.removeChild(this); // 자신을 부모로부터 제거
+                    document.getElementById("cost").innerHTML = total;
+                };
+                obj.appendChild(newobj);
+            }
+            // 상품취소 시 선택한 수량 삭제 메소드
+            function cancelca(idx){                               
+                switch(odlist[idx].mnname){
+                        case "살사리코":                 
+                            hamberger[0].check -= odlist[idx].mnea;                 
+                            break;
+                        case "화이트갈릭":
+                            hamberger[1].check -= odlist[idx].mnea;
+                            break;
+                        case "마살라":
+                            hamberger[2].check -= odlist[idx].mnea;
+                            break;
+                        case "딥치즈":
+                            hamberger[3].check -= odlist[idx].mnea;
+                            break;
+                        case "불싸이":
+                            hamberger[4].check -= odlist[idx].mnea;
+                            break;
+                        case "인크레더블":
+                            hamberger[5].check -= odlist[idx].mnea;
+                            break;
+                        case "언블리버블":
+                            hamberger[6].check -= odlist[idx].mnea;
+                            break;
+                        case "싸이":
+                            hamberger[7].check -= odlist[idx].mnea;
+                            break;
+                        case "치즈베이컨":
+                            hamberger[8].check -= odlist[idx].mnea;
+                            break;                   
+                        case "라코타샐러드":
+                            side[0].check -= odlist[idx].mnea;
+                            break; 
+                        case "어니언치즈감자":
+                            side[1].check -= odlist[idx].mnea;
+                            break; 
+                        case "할라피뇨너겟":
+                            side[2].check -= odlist[idx].mnea;
+                            break; 
+                        case "치즈스틱":
+                            side[3].check -= odlist[idx].mnea;
+                            break; 
+                        case "케이준양념감자":
+                            side[4].check -= odlist[idx].mnea;
+                            break;
+                        case "콜라":
+                            juice[0].chcek -= odlist[idx].mnea;
+                            break;
+                        case "딸기스무디":
+                            juice[1].chcek -= odlist[idx].mnea;
+                            break;
+                        case "레몬티":
+                            juice[2].chcek -= odlist[idx].mnea;
+                            break;
+                        case "오렌지주스":
+                            juice[3].chcek -= odlist[idx].mnea;
+                            break;
+                        case "아메리카노":
+                            juice[4].chcek -= odlist[idx].mnea;
+                            break;                   
+                }                
+            }
+            // 메뉴식별자 부여 메소드
+            function menuconfirm(menu) {
+                var mconfirm;
+                switch(menu.value){
+                        case "살사리코":                 
+                            mconfirm = 100;                 
+                            break;
+                        case "화이트갈릭":
+                            mconfirm = 101;
+                            break;
+                        case "마살라":
+                            mconfirm = 102;
+                            break;
+                        case "딥치즈":
+                            mconfirm = 103;
+                            break;
+                        case "불싸이":
+                            mconfirm = 104;
+                            break;
+                        case "인크레더블":
+                            mconfirm = 105;
+                            break;
+                        case "언블리버블":
+                            mconfirm = 106;
+                            break;
+                        case "싸이":
+                            mconfirm = 107;
+                            break;
+                        case "치즈베이컨":
+                            mconfirm = 108;
+                            break;                   
+                        case "라코타샐러드":
+                            mconfirm = 200;
+                            break; 
+                        case "어니언치즈감자":
+                            mconfirm = 201;  
+                            break; 
+                        case "할라피뇨너겟":
+                            mconfirm = 202;
+                            break; 
+                        case "치즈스틱":
+                            mconfirm = 203;
+                            break; 
+                        case "케이준양념감자":
+                            mconfirm = 204;
+                            break;
+                        case "콜라":
+                            mconfirm = 300;
+                            break;
+                        case "딸기스무디":
+                            mconfirm = 301;
+                            break;
+                        case "레몬티":
+                            mconfirm = 302;
+                            break;
+                        case "오렌지주스":
+                            mconfirm = 303;
+                            break;
+                        case "아메리카노":
+                            mconfirm = 304;
+                            break;                   
+                }
+                return mconfirm;
+            }
+            // 주문내역 추가 메소드
+            function addmenu(menu){
+                var cost;
+                // 1.햄버거인덱스, 2. 사이드인덱스, 3. 음료인덱스
+                var mnid;
+                var mnselect;
+                var mtc;
+                if(confirm(menu.value+"(을)를 주문하시겠습니까?")) {
+                    var ea = prompt("주문할 수량을 입력해 주세요."); 
+                    if(ea != null) {                 
+                        if(ea=="")
+                            ea=1; 
+                        ea = parseInt(ea);
+                        var mconfirm = menuconfirm(menu);                    
+                        if(parseInt(mconfirm / 100) == 1){
+                            mnselect = "햄버거";
+                        }
+                        else if(parseInt(mconfirm / 100) == 2){
+                            mnselect = "사이드";
+                        }
+                        else if(parseInt(mconfirm / 100) == 3){
+                            mnselect = "음료";  
+                        }                    
+                        mnid = mconfirm %100;                    
+                        switch(mnselect){                        
+                            case "햄버거":                        
+                                cost = (hamberger[mnid].cost*ea);
+                                hamberger[mnid].check +=ea;
+                                mtc = hamberger[mnid].time;
+                                break;
+                            case "사이드":                        
+                                cost = (side[mnid].cost*ea);
+                                side[mnid].check +=ea;
+                                mtc = side[mnid].time;
+                                break;
+                            case "음료":
+                                cost = (juice[mnid].cost*ea);
+                                juice[mnid].check +=ea;
+                                mtc = juice[mnid].time;
+                                break;
+                        }                       
+                        total += cost;                            
+                        createDIV(menu,ea,cost, mtc);                
+                        document.getElementById("cost").innerHTML = total;
+                        location.href = "#orderlisthead";
+                    }
+                }
+            }             
+        </script>
+        <style>
+                body{            
+                    background: rgba(249, 209, 149, 0.671);
+                    
+                }               
+                /* 구역설정 */
+                .s_header{                                        
+                    padding-top: 3%;
+                    line-height: 1;
+                    width: auto;
+                    height: 180px;
+                    background-image: url("맘스터치로고.png");
+                    background-size: 100% 100%;
+                    alt: "배경사진"; 
+                    text-align: center;           
+                }
+                .s_footer{
+                    padding: 5%;
+                    clear: both;
+                    margin: 5%;
+                }       
+                .s_we{                  
+                    background: rgba(255, 255, 255, 0.822);        
+                    width: 62%;
+                    height: 1902.5px;                 
+                    margin:auto;
+                    margin-top: 3%;  
+                    padding-top: 15px;
+                    padding-bottom: 15px;                  
+                } 
+                .goodsorder{			
+                    border-right: 1px solid rgba(165, 42, 42, 0.863);                  	
+                    /*padding-top: 2%;*/                                       			
+                    width: 65%;
+                    height: auto;
+                    float: left;
+                                                        
+                }
+                .orderlist{
+                        
+                        padding-top: 2.3%;                       
+                        width: 34%;
+                        height: auto;
+                        float: left;
+                        
+                        /*margin: 1%;*/	                        
+                }
+                .s_hamberger, .s_side, .s_juice, .s_usermanual{
+                    /*border: 1px solid darkred;*/
+                    width: 90%;
+                    height: auto;                    
+                    margin: 2% auto;
+                    padding: 15px;                
+                }
+                .s_list {
+                    /*border: 1px solid darkred;*/
+                    width: 90%;
+                    height: 500px;                    
+                    margin: auto;
+                    padding: 15px;
+                    overflow-x: hidden;
+                    overflow-y: auto;   
+                }
+                .s_waitlist{
+                 /*   border: 1px solid darkred;*/
+                    width: 90%;
+                    height: 812.5px;                    
+                    margin: auto;
+                    padding: 15px;
+                    overflow-x: hidden;
+                    overflow-y: auto;
+                }
+                
+                .s_w{
+                    border: 1px solid black;
+                    width: 70%;
+                    height: auto;
+                }
+                .s_pay{
+                   /* border: 1px solid darkred;*/
+                    border-top: 3px solid rgba(165, 42, 42, 0.863);
+                    /*border-top-color: blueviolet;*/
+                    width: 87%;
+                    height: auto;                    
+                    margin:  auto;
+                    margin-bottom: 1%;
+                    padding: 0 15px;
+                }
+                .s_bestmenu{
+                    
+                    width: 60%;
+                    height: 350px; 
+                    margin: 2% auto; 
+                    text-align: center;                  
+                }
+                .s_hambest{
+                    
+                    width: 30%;
+                    height: auto;
+                    float: left;
+                    margin: 1% ;
+                    margin-left: 2%;                   
+                                                            
+                }
+                .s_sidebest, .s_juicebest{
+                    
+                    width: 30%;
+                    height: auto;
+                    float: left;                                        
+                    margin: 1% ;
+                    
+                }                
+                .goodimg{
+                    margin: auto;
+                    width: 90%;
+                    height: 90%;
+                }                /* 그 외 설정 */
+                .menutable{
+                    /* border: 1px solid blue; */                    
+                    border-collapse: collapse;
+                    width: 96%;
+                    margin: auto;
+                    text-align: center;
+                    font-size: 15px;                   
+                }
+                .orderbutton{
+                    margin-left: 15%;
+                    width: 70%;                   
+                    padding: 10px;
+                    background-color: rgba(58, 14, 14, 0.897);
+                    font-size: 20px;
+                    border: none;
+                    cursor: pointer;
+                    color:white;
+                }
+                
+                hr{
+                    border: 1px solid rgba(165, 42, 42, 0.863);
+                }
+                td{
+                    width: 24%;
+                    height: auto;
+                    padding-top: 15px;
+                    padding-bottom: 15px;
+                    border-bottom: 1px solid black;                  
+                }                                            
+                input{
+                    width: 25%;
+                    height: 30%;
+                    margin: 1%;
+                    margin-left: 5%;
+                }
+                button{
+                    width: 30%;
+                    height: 30px;
+                    margin: 2% 35%;
+                }                              	 		
+            </style>
+    </head>
+    <body onload="setting()">
+            <header class="s_header">                                      
+            </header>            
+            <section class = "s_we">
+                <section>
+                <section class="goodsorder">
+                    <section class="s_bestmenu">
+                        <header><h4>추천메뉴</h4></header>
+                        <hr>
+                        <section class="s_hambest">
+                            <h5>햄버거</h5>
+                            <img id = "himg" class="goodimg" src="살사리코.png" alt = "햄버거"></img>
+                            <p id="hinfo" style="font-size: ;">살사리코</p>
+                        </section>
+                        <section class="s_sidebest">
+                            <h5>사이드메뉴</h5>
+                            <img id = "simg" class="goodimg" src="케이준양념감자.png" alt = "사이드메뉴"></img>
+                            <p id="sinfo">케이준양념감자</p>
+                        </section>
+                        <section class="s_juicebest">
+                            <h5>음료</h5>
+                            <img id = "jimg" class="goodimg" src="콜라.png" alt = "음료"></img>
+                            <p id="jinfo">콜라</p>
+                        </section>                   
+                    </section>
+                    <section class="s_hamberger">
+                        <h4 style="font-size: 20px;">햄버거</h4>
+                        <hr>                    
+                        <input type="image" src="살사리코.PNG" alt="살사리코버거" value="살사리코" onclick="addmenu(this)" onmouseover="this.src = '살사리코버거가격.png';" onmouseout="this.src = '살사리코.png';" >
+                        <input type="image" src="화이트갈릭.PNG" alt="화이트갈릭버거" value="화이트갈릭" onclick="addmenu(this)" onmouseover="this.src = '화이트갈릭버거가격.png';" onmouseout="this.src = '화이트갈릭.png';">
+                        <input type="image" src="딥치즈.PNG" alt="딥치즈버거" value="딥치즈" onclick="addmenu(this)" onmouseover="this.src = '딥치즈버거가격.png';" onmouseout="this.src = '딥치즈.png';">
+                        <input type="image" src="마살라.PNG" alt="마살라버거" value="마살라" onclick="addmenu(this)" onmouseover="this.src = '마살라버거가격.png';" onmouseout="this.src = '마살라.png';">
+                        <input type="image" src="불싸이.PNG" alt="불싸이버거" value="불싸이" onclick="addmenu(this)" onmouseover="this.src = '불싸이버거가격.png';" onmouseout="this.src = '불싸이.png';">
+                        <input type="image" src="언블리버블.PNG" alt="언블리버블버거" value="언블리버블" onclick="addmenu(this)" onmouseover="this.src = '언블리버블버거가격.png';" onmouseout="this.src = '언블리버블.png';">
+                        <input type="image" src="인크레더블.PNG" alt="인크레더블버거" value="인크레더블" onclick="addmenu(this)" onmouseover="this.src = '인크레더블버거가격.png';" onmouseout="this.src = '인크레더블.png';">
+                        <input type="image" src="치즈베이컨.PNG" alt="치즈베이컨버거" value="치즈베이컨" onclick="addmenu(this)" onmouseover="this.src = '치즈베이컨버거가격.png';" onmouseout="this.src = '치즈베이컨.png';">
+                        <input type="image" src="싸이.PNG" alt="싸이버거" value="싸이" onclick="addmenu(this)" onmouseover="this.src = '싸이버거가격.png';" onmouseout="this.src = '싸이.png';">
+                            
+                    </section>
+                    <section class="s_side">
+                            <h4 style="font-size: 20px;">사이드메뉴</h4>
+                            <hr>                    
+                            <input type="image" src="라코타샐러드.PNG" alt="라코타샐러드" value="라코타샐러드" onclick="addmenu(this)" onmouseover="this.src = '라코타샐러드가격.png';" onmouseout="this.src = '라코타샐러드.png';">
+                            <input type="image" src="어니언치즈감자.PNG" alt="어니언치즈감자" value="어니언치즈감자" onclick="addmenu(this)"onmouseover="this.src = '어니언치즈감자가격.png';" onmouseout="this.src = '어니언치즈감자.png';">
+                            <input type="image" src="할라피뇨너겟.PNG" alt="할라피뇨너겟" value="할라피뇨너겟" onclick="addmenu(this)" onmouseover="this.src = '할라피뇨너겟가격.png';" onmouseout="this.src = '할라피뇨너겟.png';">
+                            <input type="image" src="치즈스틱.PNG" alt="치즈스틱" value="치즈스틱" onclick="addmenu(this)" onmouseover="this.src = '치즈스틱가격.png';" onmouseout="this.src = '치즈스틱.png';">
+                            <input type="image" src="케이준양념감자.PNG" alt="케이준양념감자" value="케이준양념감자" onclick="addmenu(this)" onmouseover="this.src = '케이준양념감자가격.png';" onmouseout="this.src = '케이준양념감자.png';">                        
+                    </section>
+                    <section class="s_juice">                        
+                            <h4 style="font-size: 20px;">음료</h4>                        
+                            <hr>                    
+                            <input type="image" src="콜라.PNG" alt="콜라" value="콜라" onclick="addmenu(this)" onmouseover="this.src = '콜라가격.png';" onmouseout="this.src = '콜라.png';">
+                            <input type="image" src="딸기스무디.PNG" alt="딸기스무디" value="딸기스무디" onclick="addmenu(this)" onmouseover="this.src = '딸기스무디가격.png';" onmouseout="this.src = '딸기스무디.png';">
+                            <input type="image" src="레몬티.PNG" alt="래몬티" value="레몬티" onclick="addmenu(this)" onmouseover="this.src = '레몬티가격.png';" onmouseout="this.src = '레몬티.png';">
+                            <input type="image" src="오렌지주스.PNG" alt="오렌지주스" value="오렌지주스" onclick="addmenu(this)" onmouseover="this.src = '오렌지주스가격.png';" onmouseout="this.src = '오렌지주스.png';">
+                            <input type="image" src="아메리카노.PNG" alt="아메리카노" value="아메리카노" onclick="addmenu(this)" onmouseover="this.src = '아메리카노가격.png';" onmouseout="this.src = '아메리카노.png';">                        
+                    </section>
+                </section>
+                <section class="orderlist" id ="orderlisthead">
+                    <section class ="s_usermanual">
+                        <h4 style="font-size: 20px;">사용방법</h4>                  
+                        <hr>
+                        <ol>
+                            <li>상품이미지를 선택해 구매할 수량을 입력합니다.</li>
+                            <li>주문취소는 주문내역에서 취소할 상품을 더블클릭하면 됩니다.</li>
+                            <li>상품선택이 끝나면 주문버튼을 클릭해 상품을 주문합니다.</li>
+                            <li>주문버튼 클릭 시 주문대기내역에 주문자의 주문내역이 기록됩니다.</li>
+                            <li>상품 주문 시 상품 조리가 끝나면 안내팝업과 함께 활성화된 주문 수령 눌러 상품을 수령해갑니다.</li>
+                            
+                        </ol>
+                    </section>
+                    <section class="s_list">
+                        <h4 style="font-size: 20px;">주문내역</h4>                    
+                        <hr>
+                        <section></section>
+                        <table  id = menulist class="menutable">
+                            <tr style="border-bottom: 1px solid black; height: 50px; margin: 50px;">
+                                <td>상품명</td><td>수량</td><td>금액</td>
+                            </tr>                        
+                        </table>
+                        
+                    </section>
+                    <section class="s_pay">
+                        <p style="display: inline-block;">주문금액</p>
+                        <p id="cost" style="display: inline-block; float: right;"></p><br>             
+                        <input type="button" onclick="order()" value = "주문" class="orderbutton">
+                    </section>
+                    <section class = "s_waitlist">
+                            <h4 style="font-size: 20px;">주문대기내역</h4>
+                            <hr>
+                            <ol id = "waitlist"></ol>
+                    </section>
+                </section>
+            </section>
+        </section>
+            <footer  class="s_footer">
+                <section>
+                    <h4>Creator</h5>
+                    <p style="text-indent: 1em;"> 201501900 김종희</p>
+                </section>
+            </footer>	 
+    </body>
+</html>
